@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>物理知识点管理后台</title>
+  <style>
+    *{box-sizing:border-box;font-family:system-ui,sans-serif}
+    body{padding:20px;background:#f5f7fa}
+    .card{background:white;padding:20px;border-radius:12px;box-shadow:0 2px 10px #0001}
+    .section{margin-bottom:20px}
+    input,textarea,button{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:1px solid #ddd}
+    button{background:#4285f4;color:white;border:none;cursor:pointer}
+    .chapter-item{padding:10px;border:1px solid #eee;border-radius:8px;margin-bottom:10px}
+    textarea{height:120px;font-family:monospace}
+  </style>
+</head>
+<body>
+<div class="card">
+  <h2>高中物理知识点 · 管理后台</h2>
+
+  <div class="section">
+    <h3>新增章节</h3>
+    <input id="chapName" placeholder="章节名称（如：第一章 运动的描述）">
+    <input id="imgUrls" placeholder="图片链接，一行一个">
+    <button onclick="addChapter()">添加章节</button>
+  </div>
+
+  <div id="chapList"></div>
+
+  <div class="section">
+    <h3>生成学生端代码</h3>
+    <p>复制下面内容，替换 index.html 里的 chapters 数组</p>
+    <textarea id="codeOutput"></textarea>
+  </div>
+</div>
+
+<script>
+let chapters = JSON.parse(localStorage.getItem('teacherData')||'[]');
+
+function renderList(){
+  const list = document.getElementById('chapList');
+  list.innerHTML = '';
+  chapters.forEach((c,i)=>{
+    list.innerHTML += `
+    <div class="chapter-item">
+      <h4>${c.name}</h4>
+      ${c.images.map((u,j)=>`<img src="${u}" style="max-width:100%;height:auto;border-radius:8px;margin:4px 0">`).join('')}
+      <button onclick="delChap(${i})" style="background:#ff4d4f">删除</button>
+    </div>`;
+  });
+  updateCode();
+}
+
+function addChapter(){
+  const name = document.getElementById('chapName').value.trim();
+  const imgs = document.getElementById('imgUrls').value.trim().split('\n').map(x=>x.trim()).filter(Boolean);
+  if(!name) return alert('请输入章节名');
+  chapters.push({id:chapters.length+1, name, images:imgs});
+  localStorage.setItem('teacherData', JSON.stringify(chapters));
+  renderList();
+}
+
+function delChap(index){
+  chapters.splice(index,1);
+  localStorage.setItem('teacherData', JSON.stringify(chapters));
+  renderList();
+}
+
+function updateCode(){
+  document.getElementById('codeOutput').value = JSON.stringify(chapters, null, 2);
+}
+
+renderList();
+</script>
+</body>
+</html>
